@@ -1,17 +1,31 @@
 import MovieCard from "../components/MovieCard"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { searchMovies, getPopularMovies} from "../services/api";
 import "../css/Home.css"
 
 function Home() {
     const [searchQuery, setsearchQuery] = useState("");
 
-    const movies = [
-        {id: 1, title: "Oppenheimer", release_date: 2023},
-        {id: 2, title: "Rush hour 3", release_date: 2015},
-        {id: 3, title: "John Wick", release_date: 2019},
-        {id: 4, title: "Chungus and Mungus", release_date: 2018},
-        {id: 5, title: "The Shawshank Redemption", release_date: 2000},
-    ]
+const [movies, setMovies] = useState([]);
+const [error, setError] = useState(null);
+const [loading, setLoading] = useState(true)
+
+useEffect(() => {
+    const loadPopularMovies = async () => {
+        try {
+            const popularMovies = await getPopularMovies()
+            setMovies(popularMovies)
+        } catch (err) {
+            console.log(err)
+            setError("Failed to load movies...")
+        }
+        finally {
+            setLoading(false)
+        }
+    }
+
+    loadPopularMovies()
+}, [])
 
 
     const handleSearch = (e) => {
@@ -31,11 +45,18 @@ function Home() {
             <button type="submit" className = "search-button"> Search </button>
         </form>
 
-        <div className="movies-grid"> 
-            {movies.map(movie =>  ( 
-                <MovieCard movie={movie} key={movie.id} />
-            )
-        )}
+                {error && <div className="error-message">{error}</div>}
+
+      {loading ? (
+        <div className="loading">Loading...</div>
+      ) : (
+        <div className="movies-grid">
+          {movies.map((movie) => (
+            <MovieCard movie={movie} key={movie.id} />
+          ))}
         </div>
+      )}
     </div>
 }
+      
+export default Home;
